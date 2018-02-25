@@ -1,0 +1,18 @@
+
+.top-spacer {
+    margin-top:10vh;
+}
+
+.text-input {
+    font-size: 3em;
+    height: 2em;
+}
+
+.bidi-character {
+    font-size: 2em;
+    height: 2.5em;
+    line-height: 2.5em;
+    vertical-align: middle;
+    -webkit-transform: translate(0px, 0px);
+    transform: translate(0px, 0px);
+}
