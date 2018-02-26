@@ -68,6 +68,20 @@ function addNewCharacter(character, pos) {
     }
 }
 
+const bidiMarkerFontSize = "0.3em";
+
+function addBidi(character, pos) {
+    addNewCharacter(character, pos);
+    let newChar = inputElements[pos];
+    newChar.addClass("badge badge-primary bidi-marker");
+    newChar.attr("contentEditable", false);
+    newChar.css({
+        "font-size": bidiMarkerFontSize,
+        "font-weight": "normal",
+    })
+    console.log(newChar.text());
+}
+
 function refreshInputBox(caretPos) {
     let inputBox = $(".text-input");
     inputBox.empty();
@@ -78,7 +92,7 @@ function refreshInputBox(caretPos) {
 function dropActivateListener (event) {
     var dropzone = $(event.target);
     dropzone.css({
-        "font-size": "1.3em",
+        "font-size": dropzone.hasClass("bidi-marker") ? "0.5em" : "1.3em",
     });
 }
 
@@ -87,17 +101,14 @@ function dropDeactivateListener(event) {
     dropzone.css({
         "margin-left": "0px",
         "margin-right": "0px",
-        "font-size": "1em",
+        "font-size": dropzone.hasClass("bidi-marker") ? bidiMarkerFontSize : "1em",
     });
+
 
     dropzone.removeClass("border-primary");
 }
 
 function dragEnterListener(event) {
-    var draggableElement = event.relatedTarget
-    var dropzoneElement = event.target;
-
-    dropzoneElement.classList.add("border-primary");
 }
 
 function dragLeaveListener(event) {
@@ -139,7 +150,10 @@ function dropListener(event) {
         }
     }
 
-    addNewCharacter("a", i);
+    let draggable = $(event.relatedTarget);
+    let bidiChar = draggable.data("char");
+
+    addBidi(bidiChar, i);
     refreshInputBox(i + 1);
 }
 
