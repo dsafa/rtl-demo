@@ -1,5 +1,5 @@
 function dragStartListener(event) {
-    $(".text-input").addClass("border-primary");
+    $("#text-input").addClass("border-primary");
 }
 
 function dragMoveListener(event) {
@@ -18,7 +18,7 @@ function dragMoveListener(event) {
 }
 
 function dragEndListener(event) {
-    $(".text-input").removeClass("border-primary");
+    $("#text-input").removeClass("border-primary");
 
     let target = event.target;
     target.style.webkitTransition = target.style.transition = "0.2s";
@@ -70,20 +70,20 @@ function addNewCharacter(character, pos) {
 
 const bidiMarkerFontSize = "0.3em";
 
-function addBidi(character, pos) {
-    addNewCharacter(character, pos);
+function addBidi(bidiElement, pos) {
+    addNewCharacter(bidiElement.attr("data-char"), pos);
     let newChar = inputElements[pos];
     newChar.addClass("badge badge-primary bidi-marker");
     newChar.attr("contentEditable", false);
+    newChar.attr("data-codepoint", bidiElement.attr("data-codepoint"));
     newChar.css({
         "font-size": bidiMarkerFontSize,
         "font-weight": "normal",
     })
-    console.log(newChar.text());
 }
 
 function refreshInputBox(caretPos) {
-    let inputBox = $(".text-input");
+    let inputBox = $("#text-input");
     inputBox.empty();
     inputBox.append(inputElements);
     setCaretPos(inputBox[0], caretPos);
@@ -103,7 +103,6 @@ function dropDeactivateListener(event) {
         "margin-right": "0px",
         "font-size": dropzone.hasClass("bidi-marker") ? bidiMarkerFontSize : "1em",
     });
-
 
     dropzone.removeClass("border-primary");
 }
@@ -151,9 +150,7 @@ function dropListener(event) {
     }
 
     let draggable = $(event.relatedTarget);
-    let bidiChar = draggable.data("char");
-
-    addBidi(bidiChar, i);
+    addBidi(draggable, i);
     refreshInputBox(i + 1);
 }
 
@@ -166,15 +163,12 @@ interact(".drop-placeholder")
         ondragleave: dragLeaveListener,
         ondropmove: dropMoveListener,
         ondrop: dropListener,
-        // checker: function (dragEvent, event, dropped, dropzone, dropElement, draggable, draggableElement) {
-        //     console.log("checking");
-        //     return dropped && true;
-        // }
     });
 
-$(".text-input").bind('input', function (event) {
+$("#text-input").bind('input', function (event) {
     let inputBox = $(event.target);
     let caretPos = undefined;
+
     let children = inputBox.find("span");
     if (children.length == 0) {
         let text = inputBox.text();
@@ -200,12 +194,11 @@ $(".text-input").bind('input', function (event) {
         if (!found) {
             inputElements.pop();
         }
-    }
-    else {
+    } else {
         //Addition
         for (let i = 0; i < children.length; i++) {
             let child = children[i];
-            if (child.textContent.length > 1) {
+            if (child.textContent.length > 1 && !child.classList.contains("bidi-marker")) {
                 let newCharacter = child.textContent[1];
                 child.textContent = child.textContent[0];
                 addNewCharacter(newCharacter, i + 1);
@@ -221,11 +214,31 @@ $(".bidi-character").bind("mouseover", function(event) {
     $("#bidi-details").removeClass("invisible");
 
     let target = $(event.target);
-    let name = target.data("name");
-    let codepoint = target.data("codepoint");
-    let description = target.data("description");
+    let name = target.attr("data-name");
+    let codepoint = target.attr("data-codepoint");
+    let description = target.attr("data-description");
 
     $("#bidi-title").text(name);
     $("#bidi-codepoint").text("U+" + escape(codepoint).slice(2));
     $("#bidi-description").text(description);
-})
+});
+
+$("#btn-result").bind("click", function(event) {
+    let result = inputElements.map(el => {
+            if (el.hasClass("bidi-marker")) {
+                return el.attr("data-codepoint");
+            } else {
+                return el.text();
+            }
+        })
+        .join("");
+
+    $("#result").text(result);
+    $("#result").addClass("border-success");
+});
+
+$("#btn-clear").bind("click", function(event) {
+    inputElements = [];
+    refreshInputBox();
+    $("#result").removeClass("border-success");
+});
