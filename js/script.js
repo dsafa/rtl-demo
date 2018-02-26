@@ -5,7 +5,7 @@ function dragStartListener(event) {
 function dragMoveListener(event) {
     let target = event.target,
     // keep the dragged position in the data-x/data-y attributes
-    x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+    x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
     y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
     // translate the element
@@ -37,75 +37,104 @@ interact(".bidi-character")
 
 let inputElements = [];
 
-let dropTargetPlaceholder = $("<span></span>");
-dropTargetPlaceholder.addClass("drop-placeholder");
-inputElements.push(dropTargetPlaceholder);
-
-dropTargetPlaceholder.appendTo($(".text-input"));
-$(".text-input").append(inputElements);
-
 interact(".drop-placeholder")
     .dropzone({
         accept: ".bidi-character",
-        overlap: 0.50,
-        ondropactivate: function(event) {
-            console.log("???");
+        // overlap: 0.1,
+        ondropactivate: function (event) {
             event.target.classList.add("border");
         },
-        ondropdeactivate: function(event) {
+        ondropdeactivate: function (event) {
             event.target.classList.remove("border");
         },
         ondragenter: function (event) {
             var draggableElement = event.relatedTarget
             var dropzoneElement = event.target;
+            dropzoneElement.classList.add("border-primary");
+            console.log("over");
         },
         ondragleave: function (event) {
+            var draggableElement = event.relatedTarget
+            var dropzoneElement = event.target;
+            dropzoneElement.classList.remove("border-primary");
         },
         ondrop: function (event) {
         },
+        // checker: function (dragEvent, event, dropped, dropzone, dropElement, draggable, draggableElement) {
+        //     console.log("checking");
+        //     return dropped && true;
+        // }
     });
 
-//https://stackoverflow.com/a/4238971
-function placeCaretAtEnd(el) {
-    el.focus();
-    if (typeof window.getSelection != "undefined"
-            && typeof document.createRange != "undefined") {
-        var range = document.createRange();
-        range.selectNodeContents(el);
-        range.collapse(false);
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-    } else if (typeof document.body.createTextRange != "undefined") {
-        var textRange = document.body.createTextRange();
-        textRange.moveToElementText(el);
-        textRange.collapse(false);
-        textRange.select();
+function setCaretPos(element, pos) {
+    element.focus();
+    let range = document.createRange();
+    let sel = window.getSelection();
+
+    if (pos === undefined) {
+        pos = element.childNodes && element.childNodes.length || 0;
+    }
+    range.setStart(element, pos);
+    range.collapse(false);
+
+    sel.removeAllRanges();
+    sel.addRange(range);
+}
+
+function addNewCharacter(character, pos) {
+    let element = $("<span>" + character + "</span>");
+    element.addClass("drop-placeholder");
+    if (pos === undefined) {
+        inputElements.push(element);
+    } else {
+        inputElements.splice(pos, 0, element);
     }
 }
 
-function addNewCharacter(character) {
-    inputElements.push($("<span>" + character + "</span>"))
-    inputElements.push(dropTargetPlaceholder.clone());
-}
-
-$(".text-input").bind('input', function(event) {
+$(".text-input").bind('input', function (event) {
     let inputBox = event.target;
-
+    let caretPos = undefined;
     let children = inputBox.getElementsByTagName("span");
-    if (children.length == 1) {
-        //Initial state, text will be entered directly into the text of the input div
-        let newCharacter = inputBox.childNodes[0].nodeValue.trim();
-        addNewCharacter(newCharacter);
-     } else {
-        //Text is inserted into last non empty span, the second last element
-        let textNode = children[children.length - 2];
-        let insertedCharacter = textNode.textContent.slice(1, 2);
-        textNode.textContent = textNode.textContent[0];
-        addNewCharacter(insertedCharacter);
-     }
+    if (children.length == 0) {
+        let text = inputBox.textContent;
+        if (text === "") {
+            //was last character was deleted
+            inputElements.pop();
+        } else {
+            //Initial state, text will be entered directly into the text of the input div
+            addNewCharacter(text);
+        }
+    } else if (children.length < inputElements.length) {
+        //Deleting
+        let found = false;
+        for (let i = 0; i < children.length; i++) {
+            if (children[i].textContent != inputElements[i][0].textContent) {
+                found = true;
+                inputElements.splice(i, 1);
+                caretPos = i;
+            }
+        }
 
+        //delete last element
+        if (!found) {
+            inputElements.pop();
+        }
+    } else {
+        //Addition
+        for (let i = 0; i < children.length; i++) {
+            let child = children[i];
+            if (child.textContent.length > 1) {
+                let newCharacter = child.textContent[1];
+                console.log(newCharacter, i);
+                child.textContent = child.textContent[0];
+                addNewCharacter(newCharacter, i + 1);
+                caretPos = i + 2; //new character was added so add 2
+            }
+        }
+    }
+
+    //clear and reset
     inputBox.innerHTML = "";
     $(inputBox).append(inputElements);
-    placeCaretAtEnd(inputBox);
+    setCaretPos(inputBox, caretPos);
 });
