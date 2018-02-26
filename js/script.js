@@ -37,27 +37,69 @@ interact(".bidi-character")
 
 let inputElements = [];
 
+function dropActivateListener (event) {
+    var dropzone = $(event.target);
+    dropzone.css({
+        "font-size": "1.3em",
+    });
+}
+
+function dropDeactivateListener(event) {
+    var dropzone = $(event.target);
+    dropzone.css({
+        "margin-left": "0px",
+        "margin-right": "0px",
+        "font-size": "1em",
+    });
+
+    dropzone.removeClass("border-primary");
+}
+
+function dragEnterListener(event) {
+    var draggableElement = event.relatedTarget
+    var dropzoneElement = event.target;
+
+    dropzoneElement.classList.add("border-primary");
+}
+
+function dragLeaveListener(event) {
+    var dropzone = $(event.target);
+    dropzone.css({
+        "margin-left": "0px",
+        "margin-right": "0px",
+    });
+
+    dropzone.removeClass("border-primary");
+}
+
+function dropMoveListener(event) {
+    var draggable = $(event.relatedTarget);
+    var dropzone = $(event.target);
+
+    var dropzoneX = dropzone.offset().left + dropzone.width() / 2;
+    var dragX = draggable.offset().left + draggable.width() / 2;
+
+    const distance = "20px";
+    if (dragX <= dropzoneX) {
+        dropzone.css({
+            "margin-left": distance,
+        });
+    } else {
+        console.log("right");
+        dropzone.css({
+            "margin-right": distance,
+        });
+    }
+}
+
 interact(".drop-placeholder")
     .dropzone({
         accept: ".bidi-character",
-        // overlap: 0.1,
-        ondropactivate: function (event) {
-            event.target.classList.add("border");
-        },
-        ondropdeactivate: function (event) {
-            event.target.classList.remove("border");
-        },
-        ondragenter: function (event) {
-            var draggableElement = event.relatedTarget
-            var dropzoneElement = event.target;
-            dropzoneElement.classList.add("border-primary");
-            console.log("over");
-        },
-        ondragleave: function (event) {
-            var draggableElement = event.relatedTarget
-            var dropzoneElement = event.target;
-            dropzoneElement.classList.remove("border-primary");
-        },
+        ondropactivate: dropActivateListener,
+        ondropdeactivate: dropDeactivateListener,
+        ondragenter: dragEnterListener,
+        ondragleave: dragLeaveListener,
+        ondropmove: dropMoveListener,
         ondrop: function (event) {
         },
         // checker: function (dragEvent, event, dropped, dropzone, dropElement, draggable, draggableElement) {
@@ -83,6 +125,10 @@ function setCaretPos(element, pos) {
 
 function addNewCharacter(character, pos) {
     let element = $("<span>" + character + "</span>");
+    element.css({
+        "display": "inline-block",
+        "transition": "all 0.2s",
+    });
     element.addClass("drop-placeholder");
     if (pos === undefined) {
         inputElements.push(element);
@@ -125,7 +171,6 @@ $(".text-input").bind('input', function (event) {
             let child = children[i];
             if (child.textContent.length > 1) {
                 let newCharacter = child.textContent[1];
-                console.log(newCharacter, i);
                 child.textContent = child.textContent[0];
                 addNewCharacter(newCharacter, i + 1);
                 caretPos = i + 2; //new character was added so add 2
