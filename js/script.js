@@ -37,6 +37,44 @@ interact(".bidi-character")
 
 let inputElements = [];
 
+function setCaretPos(element, pos) {
+    element.focus();
+    let range = document.createRange();
+    let sel = window.getSelection();
+
+    if (pos === undefined) {
+        pos = element.childNodes && element.childNodes.length || 0;
+    }
+    range.setStart(element, pos);
+    range.collapse(false);
+
+    sel.removeAllRanges();
+    sel.addRange(range);
+}
+
+function addNewCharacter(character, pos) {
+    let element = $("<span>" + character + "</span>");
+    element.css({
+        "display": "inline-block",
+        "transition": "all 0.2s",
+    });
+    element.addClass("drop-placeholder");
+
+    //add to the end if pos not specified
+    if (pos === undefined) {
+        inputElements.push(element);
+    } else {
+        inputElements.splice(pos, 0, element);
+    }
+}
+
+function refreshInputBox(caretPos) {
+    let inputBox = $(".text-input");
+    inputBox.empty();
+    inputBox.append(inputElements);
+    setCaretPos(inputBox[0], caretPos);
+}
+
 function dropActivateListener (event) {
     var dropzone = $(event.target);
     dropzone.css({
@@ -83,13 +121,28 @@ function dropMoveListener(event) {
     if (dragX <= dropzoneX) {
         dropzone.css({
             "margin-left": distance,
+            "margin-right": "0px",
         });
     } else {
         console.log("right");
         dropzone.css({
             "margin-right": distance,
+            "margin-left": "0px",
         });
     }
+}
+
+function dropListener(event) {
+    let i = 0;
+    for (i; i < inputElements.length; i++) {
+        if (inputElements[i][0] === event.target) {
+            break;
+        }
+    }
+
+    console.log(i);
+    addNewCharacter("a", i);
+    refreshInputBox(i + 1);
 }
 
 interact(".drop-placeholder")
@@ -100,49 +153,20 @@ interact(".drop-placeholder")
         ondragenter: dragEnterListener,
         ondragleave: dragLeaveListener,
         ondropmove: dropMoveListener,
-        ondrop: function (event) {
-        },
+        ondrop: dropListener,
         // checker: function (dragEvent, event, dropped, dropzone, dropElement, draggable, draggableElement) {
         //     console.log("checking");
         //     return dropped && true;
         // }
     });
 
-function setCaretPos(element, pos) {
-    element.focus();
-    let range = document.createRange();
-    let sel = window.getSelection();
-
-    if (pos === undefined) {
-        pos = element.childNodes && element.childNodes.length || 0;
-    }
-    range.setStart(element, pos);
-    range.collapse(false);
-
-    sel.removeAllRanges();
-    sel.addRange(range);
-}
-
-function addNewCharacter(character, pos) {
-    let element = $("<span>" + character + "</span>");
-    element.css({
-        "display": "inline-block",
-        "transition": "all 0.2s",
-    });
-    element.addClass("drop-placeholder");
-    if (pos === undefined) {
-        inputElements.push(element);
-    } else {
-        inputElements.splice(pos, 0, element);
-    }
-}
-
 $(".text-input").bind('input', function (event) {
-    let inputBox = event.target;
+    console.log("!");
+    let inputBox = $(event.target);
     let caretPos = undefined;
-    let children = inputBox.getElementsByTagName("span");
+    let children = inputBox.find("span");
     if (children.length == 0) {
-        let text = inputBox.textContent;
+        let text = inputBox.text();
         if (text === "") {
             //was last character was deleted
             inputElements.pop();
@@ -165,7 +189,8 @@ $(".text-input").bind('input', function (event) {
         if (!found) {
             inputElements.pop();
         }
-    } else {
+    }
+    else {
         //Addition
         for (let i = 0; i < children.length; i++) {
             let child = children[i];
@@ -178,8 +203,5 @@ $(".text-input").bind('input', function (event) {
         }
     }
 
-    //clear and reset
-    inputBox.innerHTML = "";
-    $(inputBox).append(inputElements);
-    setCaretPos(inputBox, caretPos);
+    refreshInputBox(caretPos);
 });
