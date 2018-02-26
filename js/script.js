@@ -124,7 +124,6 @@ function dropMoveListener(event) {
             "margin-right": "0px",
         });
     } else {
-        console.log("right");
         dropzone.css({
             "margin-right": distance,
             "margin-left": "0px",
@@ -140,7 +139,6 @@ function dropListener(event) {
         }
     }
 
-    console.log(i);
     addNewCharacter("a", i);
     refreshInputBox(i + 1);
 }
@@ -161,7 +159,6 @@ interact(".drop-placeholder")
     });
 
 $(".text-input").bind('input', function (event) {
-    console.log("!");
     let inputBox = $(event.target);
     let caretPos = undefined;
     let children = inputBox.find("span");
@@ -205,3 +202,16 @@ $(".text-input").bind('input', function (event) {
 
     refreshInputBox(caretPos);
 });
+
+$(".bidi-character").bind("mouseover", function(event) {
+    $("#bidi-details").removeClass("invisible");
+
+    let target = $(event.target);
+    let name = target.data("name");
+    let codepoint = target.data("codepoint");
+    let description = target.data("description");
+
+    $("#bidi-title").text(name);
+    $("#bidi-codepoint").text("U+" + escape(codepoint).slice(2));
+    $("#bidi-description").text(description);
+})

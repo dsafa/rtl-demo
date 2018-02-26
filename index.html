@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>RTL demo</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
@@ -24,19 +25,104 @@
             </div>
         </div>
         <div class="row mx-5 my-5">
-            <div class="col text-center text-secondary">
+            <div class="col text-center">
                 <h3>Drag bidi characters below into the input box above</h3>
+                <h5 class="text-secondary">Hover for a description</h5>
             </div>
         </div>
         <div class="row mx-5 justify-content-md-center">
             <div class="col-md-auto">
-                <div class="bidi-character border rounded bg-primary text-white px-3">
-                    RTL
+                <div class="bidi-character border rounded bg-primary text-white px-3"
+                    data-char="LRI"
+                    data-name="LEFT-TO-RIGHT ISOLATE"
+                    data-codepoint="&#x2066"
+                    data-description="Marks that the text direction is to be left to right and directionally isolated from the surrounding text.">
+                    LRI
                 </div>
             </div>
             <div class="col-md-auto">
-                <div class="bidi-character border rounded bg-primary text-white px-3">
-                    LTR
+                <div class="bidi-character border rounded bg-primary text-white px-3"
+                    data-char="RLI"
+                    data-name="RIGHT-TO-LEFT ISOLATE"
+                    data-codepoint="&#x2067"
+                    data-description="Marks that the text direction is to be right to left and directionally isolated from the surrounding text.">
+                    RLI
+                </div>
+            </div>
+            <div class="col-md-auto">
+                <div class="bidi-character border rounded bg-primary text-white px-3"
+                    data-char="FSI"
+                    data-name="FIRST-STRONG ISOLATE"
+                    data-codepoint="&#x2068"
+                    data-description="Marks that the text direction is to be set by the first strong character and directionally isolated from the surrounding text.">
+                    FSI
+                </div>
+            </div>
+            <div class="col-md-auto">
+                <div class="bidi-character border rounded bg-primary text-white px-3"
+                    data-char="LRE"
+                    data-name="LEFT-TO-RIGHT EMBEDDING"
+                    data-codepoint="&#x202A"
+                    data-description="Marks that the text direction is to be left to right. Discouraged in favour of 'isolates'.">
+                    LRE
+                </div>
+            </div>
+            <div class="col-md-auto">
+                <div class="bidi-character border rounded bg-primary text-white px-3"
+                    data-char="RLE"
+                    data-name="RIGHT-TO-LEFT EMBEDDING"
+                    data-codepoint="&#x202B"
+                    data-description="Marks that the text direction is to be right to left. Discouraged in favour of 'isolates'.">
+                    RLE
+                </div>
+            </div>
+            <div class="col-md-auto">
+                <div class="bidi-character border rounded bg-primary text-white px-3"
+                    data-char="LRO"
+                    data-name="LEFT-TO-RIGHT OVERRIDE"
+                    data-codepoint="&#x202D"
+                    data-description="Overrides the bidirection algorithm to display characters left to right. Not recommended.">
+                    LRO
+                </div>
+            </div>
+            <div class="col-md-auto">
+                <div class="bidi-character border rounded bg-primary text-white px-3"
+                    data-char="RLO"
+                    data-name="RIGHT-TO-LEFT OVERRIDE"
+                    data-codepoint="&#x202E"
+                    data-description="Overrides the bidirection algorithm to display characters right to left. Not recommended.">
+                    RLO
+                </div>
+            </div>
+            <div class="col-md-auto">
+                <div class="bidi-character border rounded bg-primary text-white px-3"
+                    data-char="PDF"
+                    data-name="POP DIRECTIONAL FORMATTING"
+                    data-codepoint="&#x202C"
+                    data-description="Terminate scope of current override or embedding">
+                    PDF
+                </div>
+            </div>
+            <div class="col-md-auto">
+                <div class="bidi-character border rounded bg-primary text-white px-3"
+                    data-char="PDI"
+                    data-name="POP DIRECTIONAL ISOLATE"
+                    data-codepoint="&#x2069"
+                    data-description="Terminate scope of current isolate">
+                    PDI
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <div class="row mx-5 my-5 justify-content-center">
+            <div class="col col-lg text-center ">
+                <div id="bidi-details" class="invisible">
+                    <h1 id="bidi-title">Title</h2>
+                    <h5><span id="bidi-codepoint" class="badge badge-secondary">U+2066</span></h5>
+                    <hr>
+                    <div id="bidi-description">Description</div>
                 </div>
             </div>
         </div>
