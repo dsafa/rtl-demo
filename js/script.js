@@ -292,15 +292,13 @@ function drawRuns() {
         //Replace substring with span to calculate the width and position
         let chunk = text.substring(lastIndex, i);
         resultsElement.html(function () {
-            console.log("chunk " + escape(chunk));
             return $(this).text().replace(chunk, "<span>" + escape(chunk).replace(/%u[0-9A-F]{4}/, "") + "</span>");
         });
 
         let insertedSpan = resultsElement.find("span");
-        console.log(resultsElement.html());
         let pos = insertedSpan.position();
         let width = insertedSpan.width();
-        console.log(dir);
+
         // draw.rect(50, 50);
         arrows.push({
             x: pos.left,
@@ -319,14 +317,14 @@ function drawRuns() {
         escapeCount = 0;
     }
 
+    let height = $("#directional-runs").height();
     for (let arrow of arrows) {
         let shape;
         if (arrow.dir % 2 == 0) {
-            console.log("rtl");
             shape = draw.line(arrow.x, arrow.y, arrow.toX, arrow.toY);
         } else {
-            console.log("trl");
-            shape = draw.line(arrow.toX, arrow.toY, arrow.x, arrow.y);
+            let additionalHeight = height / 2 + 20;
+            shape = draw.line(arrow.toX, arrow.toY + additionalHeight, arrow.x, arrow.y + additionalHeight);
         }
 
         shape.stroke({
