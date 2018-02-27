@@ -16,3 +16,9 @@
     -webkit-transform: translate(0px, 0px);
     transform: translate(0px, 0px);
 }
+
+.result-display {
+    font-size: 3em;
+    height: 2em;
+    padding: 10px;
+}

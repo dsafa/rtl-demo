@@ -52,26 +52,30 @@ function setCaretPos(element, pos) {
     sel.addRange(range);
 }
 
-function addNewCharacter(character, pos) {
-    let element = $("<span>" + character + "</span>");
-    element.css({
-        "display": "inline-block",
-        "transition": "all 0.2s",
-    });
-    element.addClass("drop-placeholder");
+function addNewCharacters(characters, pos) {
+    let arr = characters.constructor === Array ? characters : [characters];
+    for (let character of arr) {
+        let element = $("<span>" + character + "</span>");
+        element.css({
+            "display": "inline-block",
+            "transition": "all 0.2s",
+        });
+        element.addClass("drop-placeholder");
+        element.addClass("input-character");
 
-    //add to the end if pos not specified
-    if (pos === undefined) {
-        inputElements.push(element);
-    } else {
-        inputElements.splice(pos, 0, element);
+        //add to the end if pos not specified
+        if (pos === undefined) {
+            inputElements.push(element);
+        } else {
+            inputElements.splice(pos, 0, element);
+        }
     }
 }
 
 const bidiMarkerFontSize = "0.3em";
 
 function addBidi(bidiElement, pos) {
-    addNewCharacter(bidiElement.attr("data-char"), pos);
+    addNewCharacters(bidiElement.attr("data-char"), pos);
     let newChar = inputElements[pos];
     newChar.addClass("badge badge-primary bidi-marker");
     newChar.attr("contentEditable", false);
@@ -172,12 +176,13 @@ $("#text-input").bind('input', function (event) {
     let children = inputBox.find("span");
     if (children.length == 0) {
         let text = inputBox.text();
+
         if (text === "") {
             //was last character was deleted
             inputElements.pop();
         } else {
             //Initial state, text will be entered directly into the text of the input div
-            addNewCharacter(text);
+            addNewCharacters(text);
         }
     } else if (children.length < inputElements.length) {
         //Deleting
@@ -198,11 +203,23 @@ $("#text-input").bind('input', function (event) {
         //Addition
         for (let i = 0; i < children.length; i++) {
             let child = children[i];
-            if (child.textContent.length > 1 && !child.classList.contains("bidi-marker")) {
-                let newCharacter = child.textContent[1];
-                child.textContent = child.textContent[0];
-                addNewCharacter(newCharacter, i + 1);
-                caretPos = i + 2; //new character was added so add 2
+            let containsNewChar = child.textContent.length > 1;
+            let isCreatedSpan = child.classList.contains("input-character");
+
+            if (containsNewChar && isCreatedSpan) {
+                //Typed in a character
+                let contentAfter = child.textContent[0];
+                let newCharacters = child.textContent.slice(1);
+
+                child.textContent = contentAfter;
+                addNewCharacters(Array.from(newCharacters), i + 1);
+                caretPos = i + newCharacters.length + 1;
+                break;
+            } else if (!isCreatedSpan) {
+                //Text was pasted at the end
+                addNewCharacters(Array.from(child.textContent));
+                caretPos = child.textContent.length;
+                break;
             }
         }
     }
