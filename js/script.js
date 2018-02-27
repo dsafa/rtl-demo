@@ -205,9 +205,10 @@ $("#text-input").bind('input', function (event) {
             let child = children[i];
             let containsNewChar = child.textContent.length > 1;
             let isCreatedSpan = child.classList.contains("input-character");
+            let isBidiMarker = child.classList.contains("bidi-marker");
 
-            if (containsNewChar && isCreatedSpan) {
-                //Typed in a character
+            if (containsNewChar && !isBidiMarker && isCreatedSpan) {
+                //Characters in middle
                 let contentAfter = child.textContent[0];
                 let newCharacters = child.textContent.slice(1);
 
@@ -240,19 +241,103 @@ $(".bidi-character").bind("mouseover", function(event) {
     $("#bidi-description").text(description);
 });
 
+const resolve = UnicodeBidirectional.resolve;
 $("#btn-result").bind("click", function(event) {
     let result = inputElements.map(el => {
-            if (el.hasClass("bidi-marker")) {
-                return el.attr("data-codepoint");
-            } else {
-                return el.text();
-            }
-        })
-        .join("");
+        if (el.hasClass("bidi-marker")) {
+            return el.attr("data-codepoint");
+        } else {
+            return el.text();
+        }
+    })
+    .join("");
 
     $("#result").text(result);
     $("#result").addClass("border-success");
+    drawRuns();
 });
+
+const draw = SVG('directional-runs').size($("#result").width(), "100%");
+function drawRuns() {
+    draw.clear();
+
+    let resultsElement = $("#result");
+    let text = resultsElement.text().trim();
+    if (text.length == 0) {
+        return;
+    }
+
+    let directionArray = resolve(Array.from(text).map(x => x.codePointAt(0), 0));
+    console.log(directionArray);
+    let arrows = [];
+
+    //loop and get the runs
+    let dir = directionArray[0];
+    let lastIndex = 0;
+    for (let i = 0; i < directionArray.length; i++) {
+        let isLastElement = i === directionArray.length - 1
+        if (dir == "x" && !isLastElement) {
+            lastIndex = i;
+            dir = directionArray[i + 1];
+            continue;
+        }
+        if (directionArray[i] === dir && !isLastElement) {
+            continue;
+        }
+
+        if (isLastElement) {
+            i++;
+        }
+
+        //Replace substring with span to calculate the width and position
+        let chunk = text.substring(lastIndex, i);
+        resultsElement.html(function () {
+            console.log("chunk " + escape(chunk));
+            return $(this).text().replace(chunk, "<span>" + escape(chunk).replace(/%u[0-9A-F]{4}/, "") + "</span>");
+        });
+
+        let insertedSpan = resultsElement.find("span");
+        console.log(resultsElement.html());
+        let pos = insertedSpan.position();
+        let width = insertedSpan.width();
+        console.log(dir);
+        // draw.rect(50, 50);
+        arrows.push({
+            x: pos.left,
+            y: pos.top,
+            toX: pos.left + width - 20,
+            toY: pos.top,
+            dir: dir,
+        });
+
+        //reset
+        resultsElement.empty();
+        resultsElement.text(text);
+
+        dir = directionArray[i];
+        lastIndex = i;
+        escapeCount = 0;
+    }
+
+    for (let arrow of arrows) {
+        let shape;
+        if (arrow.dir % 2 == 0) {
+            console.log("rtl");
+            shape = draw.line(arrow.x, arrow.y, arrow.toX, arrow.toY);
+        } else {
+            console.log("trl");
+            shape = draw.line(arrow.toX, arrow.toY, arrow.x, arrow.y);
+        }
+
+        shape.stroke({
+                width: 5,
+                color: "#428bca"
+            })
+            .marker("end", 4, 4, function(add) {
+                add.polygon('0,0 4,2 0,4').fill("#428bca");
+            });
+    }
+}
 
 $("#btn-clear").bind("click", function(event) {
     inputElements = [];
