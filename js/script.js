@@ -342,3 +342,23 @@ $("#btn-clear").bind("click", function(event) {
     refreshInputBox();
     $("#result").removeClass("border-success");
 });
+
+$("#btn-clear-result").bind("click", function(event) {
+    let result = $("#result");
+    result.removeClass("border-success");
+    result.empty();
+    draw.clear();
+});
+
+$("#btn-dir").bind("click", function(event) {
+    let result = $("#result");
+    let btn = $("#btn-dir");
+    console.log(btn.text())
+    if (btn.text() == "RTL") {
+        result.attr("dir", "ltr");
+        btn.text("LTR")
+    } else if (btn.text() == "LTR") {
+        result.attr("dir", "rtl");
+        btn.text("RTL");
+    }
+});
